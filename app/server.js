@@ -8,6 +8,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const cors = require("cors")
 require("dotenv").config()
 const { AllRoutes } = require("./router/router");
+const expressBasicAuth = require("express-basic-auth");
 
 module.exports = class Application {
   #app = express();
@@ -30,16 +31,20 @@ module.exports = class Application {
     this.#app.use(express.static(path.join(__dirname, "..", "public")));
     this.#app.use(
       "/api-doc",
+      expressBasicAuth({
+        users: {'behrooz': "blog-nodejs-123"},
+        challenge: true,
+      }),
       swaggerUI.serve,
       swaggerUI.setup(
         swaggerJsDoc({
           swaggerDefinition: {
             openapi: "3.0.0",
             info: {
-              title: "Boto Start Store",
+              title: "PersonalBlog",
               version: "2.0.0",
               description:
-                "بزرگترین مرجع آموزش برنامه نویسی و فروش محصولات جذاب برای برنامه نویسان",
+                "nodejs weblog",
               contact: {
                 name: "Erfan Yousefi",
                 url: "https://freerealapi.com",
@@ -48,11 +53,8 @@ module.exports = class Application {
             },
             servers: [
               {
-                url: "http://localhost:4000",
-              },
-              {
-                url: "http://localhost:5000",
-              },
+                url: "http://localhost:2000",
+              }
             ],
             components : {
               securitySchemes : {
@@ -76,7 +78,7 @@ module.exports = class Application {
     const http = require("http");
     const server = http.createServer(this.#app)
     server.listen(this.#PORT, () => {
-      console.log("run > http://localhost:" + this.#PORT);
+      console.log("swagger run > http://localhost:" + this.#PORT + "/api-doc");
     });
   }
   connectToMongoDB() {

@@ -6,27 +6,23 @@
  *              type: object
  *              required:
  *                  -   title
- *                  -   short_text
- *                  -   text
- *                  -   tags
- *                  -   category
+ *                  -   header
+ *                  -   description
+ *                  -   author
  *                  -   image
  *              properties:
  *                  title:
  *                      type: string
  *                      description: the title of category
- *                  short_text:
+ *                  header:
  *                      type: string
- *                      description: the summary of text of blog
- *                  text:
+ *                      description: the header of blog
+ *                  description:
  *                      type: string
  *                      description: the text of blog
- *                  tags:
+ *                  author:
  *                      type: string
- *                      description: the list of tags for example(tag1#tag2#tag_foo)
- *                  category:
- *                      type: string
- *                      description: the id of category for foreinField in blog
+ *                      description: the author of blog
  *                  image:
  *                      type: file
  *                      description: the index picture of blog
@@ -36,18 +32,15 @@
  *                  title:
  *                      type: string
  *                      description: the title of category
- *                  short_text:
+ *                  header:
  *                      type: string
- *                      description: the summary of text of blog
- *                  text:
+ *                      description: the header of text of blog
+ *                  description:
  *                      type: string
  *                      description: the text of blog
- *                  tags:
+ *                  author:
  *                      type: string
- *                      description: the list of tags for example(tag1#tag2#tag_foo)
- *                  category:
- *                      type: string
- *                      description: the id of category for foreinField in blog
+ *                      description: the author of blog
  *                  image:
  *                      type: file
  *                      description: the index picture of blog

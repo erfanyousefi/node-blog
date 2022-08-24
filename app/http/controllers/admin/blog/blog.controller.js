@@ -2,20 +2,18 @@ const { createBlogSchema } = require("../../../validators/admin/blog.schema")
 const Controller = require("../../controller")
 const path = require("path");
 const { BlogModel } = require("../../../../models/blogs");
-const { deleteFileInPublic } = require("../../../../utils/functions");
 const { StatusCodes:HttpStatus} = require("http-status-codes")
 const createError = require("http-errors");
-const { UserModel } = require("../../../../models/users");
+const { unlinkSync } = require("fs");
 class BlogController extends Controller {
     async createBlog(req, res, next){
         try {
             const blogDataBody = await createBlogSchema.validateAsync(req.body);
             req.body.image =path.join(blogDataBody.fileUploadPath, blogDataBody.filename)
             req.body.image = req.body.image.replace(/\\/g, "/")
-            const {title, text, short_text, category, tags} = blogDataBody;
+            const {title, description, header, author} = blogDataBody;
             const image =  req.body.image
-            const author = req.user._id 
-            const blog = await BlogModel.create({title,image, text, short_text, category, tags, author})
+            await BlogModel.create({title,image, description, header, author})
             return res.status(HttpStatus.CREATED).json({
                 statusCode: HttpStatus.CREATED,
                 data : {
@@ -23,7 +21,7 @@ class BlogController extends Controller {
                 }
             })
         } catch (error) {
-            deleteFileInPublic(req.body.image)
+            unlinkSync(req.file.path)
             next(error)
         }
     }
@@ -44,54 +42,13 @@ class BlogController extends Controller {
     async getListOfBlogs(req, res, next){
         try {
 
-            const blogs = await BlogModel.aggregate([
-                {$match : {}},
-                {
-                    $lookup : {
-                        from : "users",
-                        foreignField : "_id",
-                        localField : "author",
-                        as : "author"
-                    }
-                },
-                {
-                    $unwind : "$author"
-                },
-                {
-                    $lookup : {
-                        from : "categories",
-                        foreignField : "_id",
-                        localField : "category",
-                        as : "category"
-                    }
-                },
-                {
-                    $unwind : "$category"
-                },
-                {
-                    $project : {
-                        "author.__v" :0,
-                        "category.__v" :0,
-                        "author.otp" : 0,
-                        "author.Roles" : 0,
-                        "author.discount" : 0,
-                        "author.bills" : 0,
-                    }
-                }
-            ])
+            const blogs = await BlogModel.find({})
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
-                data:{
+                data: {
                     blogs
                 }
             })
-        } catch (error) {
-            next(error)
-        }
-    }
-    async getCommetsOfBlog(req, res, next){
-        try {
-            
         } catch (error) {
             next(error)
         }
@@ -122,7 +79,7 @@ class BlogController extends Controller {
             }
             const data = req.body;
             let nullishData = ["", " ", "0", 0, null, undefined]
-            let blackListFields = ["bookmarks", "deslikes", "comments", "likes", "author"]
+            let blackListFields = ["_id"]
             Object.keys(data).forEach(key => {
                 if(blackListFields.includes(key)) delete data[key]
                 if(typeof data[key] == "string") data[key] = data[key].trim();
@@ -139,14 +96,12 @@ class BlogController extends Controller {
                 }
             })
         } catch (error) {
-            deleteFileInPublic(req?.body?.image)
             next(error)
         }
     }
     async findBlog(id) {
-        const blog = await BlogModel.findById(id).populate([{path : "category", select : ['title']}, {path: "author", select : ['mobile', 'first_name', 'last_name', 'username']}]);
+        const blog = await BlogModel.findById(id);
         if(!blog) throw createError.NotFound("مقاله ای یافت نشد");
-        delete blog.category.children
         return blog
     }
 }
